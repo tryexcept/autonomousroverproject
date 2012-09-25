@@ -127,12 +127,10 @@ void music()
 long range_time;
 void loop()
 {
-
   //publish the adc value every 250 milliseconds
   //since it takes that long for the sensor to stablize
   if ( millis() >= range_time ){
-    range_msg.range = reading;
-	//getRange_Ultrasound();
+    range_msg.range = getRange_Ultrasound();
     range_msg.header.stamp = nh.now();
     pub_range.publish(&range_msg);
     range_time =  millis() + 250;
