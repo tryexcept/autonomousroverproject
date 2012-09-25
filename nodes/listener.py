@@ -6,7 +6,7 @@ from std_msgs.msg import Empty
 
 def cb(pub, data):
     rospy.loginfo('{}: {}'.format(rospy.get_name(), data.range))
-    if data.range < 12:
+    if data.range < 15:
 	pub.publish(Empty())
 
 def listener():
