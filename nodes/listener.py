@@ -6,6 +6,7 @@ from std_msgs.msg import Empty
 
 def cb(pub, data):
     rospy.loginfo('{}: {}'.format(rospy.get_name(), data.range))
+    # need to calibrate back to CM
     if data.range < 17:
 	pub.publish(Empty())
 
