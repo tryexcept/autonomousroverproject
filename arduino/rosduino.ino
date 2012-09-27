@@ -67,6 +67,7 @@ ros::Subscriber<std_msgs::Empty> sub("/beep", messageCb );
 
 void onReceive(int howMany)
 {
+  //doesn't work
   music();
   // step 5: receive reading from sensor
   if(2 <= Wire.available())    // if two bytes were received
