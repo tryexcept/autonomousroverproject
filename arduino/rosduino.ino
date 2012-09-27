@@ -1,5 +1,5 @@
 /* 
- * arp 
+ * arp - autonomous rover project
  */
 
 #include <ros.h>
