@@ -23,7 +23,7 @@ void requestUltrasonicRead() {
                                // the address specified in the datasheet is 224 (0xE0)
                                // but i2c adressing uses the high 7 bits so it's 112
   Wire.write(byte(0x00));      // sets register pointer to the command register (0x00)  
-  Wire.write(byte(0x52));      // command sensor to measure in "centimetres" (0x50)
+  Wire.write(byte(0x50));      // command sensor to measure in "centimetres" (0x50)
                                // use 0x51 for inches
                                // use 0x52 for ping microseconds
   Wire.endTransmission();      // stop transmitting
