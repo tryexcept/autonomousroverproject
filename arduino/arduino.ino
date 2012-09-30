@@ -68,7 +68,6 @@ ros::Subscriber<std_msgs::Empty> sub("/beep", messageCb );
 void onReceive(int howMany)
 {
   //doesn't work
-  music();
   // step 5: receive reading from sensor
   if(2 <= Wire.available())    // if two bytes were received
   {
@@ -105,25 +104,25 @@ void setup()
   requestUltrasonicRead();
 }
 
-void music() 
-{
-  // iterate over the notes of the melody:
-  for (int thisNote = 0; thisNote < 8; thisNote++) {
-
-    // to calculate the note duration, take one second 
-    // divided by the note type.
-    //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-    int noteDuration = 1000/noteDurations[thisNote];
-    tone(8, melody[thisNote],noteDuration);
-
-    // to distinguish the notes, set a minimum time between them.
-    // the note's duration + 30% seems to work well:
-    int pauseBetweenNotes = noteDuration * 1.30;
-    delay(pauseBetweenNotes);
-    // stop the tone playing:
-    noTone(8);
-  }
-}
+//void music() 
+//{
+//  gc iterate over the notes of the melody:
+//  for (int thisNote = 0; thisNote < 8; thisNote++) {
+//
+//    gc to calculate the note duration, take one second 
+//    gc divided by the note type.
+//    gce.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+//    int noteDuration = 1000/noteDurations[thisNote];
+//    tone(8, melody[thisNote],noteDuration);
+//
+//    gc to distinguish the notes, set a minimum time between them.
+//    gc the note's duration + 30% seems to work well:
+//    int pauseBetweenNotes = noteDuration * 1.30;
+//    delay(pauseBetweenNotes);
+//    gc stop the tone playing:
+//    noTone(8);
+//  }
+//}
 
 long range_time;
 void loop()
