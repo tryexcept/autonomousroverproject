@@ -63,6 +63,7 @@ void setupUltrasonic()
 ros::NodeHandle  nodeHandle;
 void setupPubSub()
 {
+    ls_msg.data_length = 50;
     nodeHandle.initNode();
     nodeHandle.advertise(pub_laserscan);
     nodeHandle.subscribe(subbeep);
