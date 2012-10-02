@@ -58,57 +58,9 @@ void messageCb( const std_msgs::Empty& toggle_msg){
 
 ros::Subscriber<std_msgs::Empty> subbeep("/beep", messageCb );
 
-
-//void onReceive(int howMany)
-//{
-//  tone(8, 262, 100);
-//  tone(8, 262, 100);
-//  tone(8, 262, 100);
-//  tone(8, 262, 100);
-//  tone(8, 262, 100);
-// 
-//  //doesn't work
-//  // step 5: receive reading from sensor
-//  if(2 <= Wire.available())    // if two bytes were received
-//  {
-//    reading = Wire.read();  // receive high byte (overwrites previous reading)
-//    reading = reading << 8;    // shift high byte to be high 8 bits
-//    reading |= Wire.read(); // receive low byte as lower 8 bits
-//  }
-//  requestUltrasonicRead();
-//}
-
-int pos = 10;
-bool direction = true;
-void serv()
-{
-    myservo.write(pos);              // tell servo to go to position in variable 'pos'
-    pos = direction?pos+10:pos-10;
-    if (pos == 120)
-        direction = true;
-    else if (pos == 0)
-        direction = false;
-
-}
-
-void gmapmode()
-{
-    for (int i = 26; i < 50; ++i)
-    {
-        myservo.write(i);
-        delay(20);
-    }
-    for (int i = 50; i > 0; i--)
-    {
-        myservo.write(i);
-        delay(20);
-    }
-}
-
 void setupUltrasonic()
 {
     Wire.begin();
-    //Wire.onReceive(onReceive);
     Wire.beginTransmission(112); // transmit to device #112 (0x70)
     Wire.write(byte(0x02));      // sets register pointer to range register (0x02)
     Wire.write(byte(0x5d));      
@@ -116,12 +68,6 @@ void setupUltrasonic()
 }
 void setupPubSub()
 {
-//    range_msg.radiation_type = sensor_msgs::::ULTRASOUND;
-//    range_msg.header.frame_id = "/ultrasound";
-//    range_msg.field_of_view = 0.1;  // fake
-//    range_msg.min_range = 0;
-//    range_msg.max_range = 70;
-
     nodeHandle.initNode();
     nodeHandle.advertise(pub_laserscan);
     nodeHandle.subscribe(subbeep);
@@ -130,6 +76,7 @@ void setupServo()
 {
     myservo.attach(9);
     myservo.write(25);
+    // make sure it gets there
     delay(2000);
 }
 void setupMotors()
@@ -150,19 +97,20 @@ void setup()
     setupUltrasonic();
     setupPubSub();
     setupMotors();
-    beep();
-    delay(100);
-    beep();
-    delay(70);
-    beep();
+
+    // tell the world you are ready
+    for (int i=0; i < 10; ++i)
+    {
+        beep();
+        delay(100);
+    }
 }
 
-int ranges[50];
 int servo_pos = 25;
 bool flag = true;
 void sweepAndScan()
 {
-    ranges[servo_pos] = getRange_Ultrasound();
+    ls_msg.ranges[servo_pos] = (float) getRange_Ultrasound();
     if (flag) {
         --servo_pos;
     }
@@ -183,15 +131,6 @@ void sweepAndScan()
 
 void loop()
 {
-    long range_time;
-    // publish the adc value at most every 250 milliseconds
-    // since it takes that long for the sensor to stablize
-    // FIXME: public spin lock - i rather have a timer interrupt or something
-    //if ( millis() >= range_time )
-    //{
-    //    range_time =  millis() + 250;
     sweepAndScan();
-    //publish();
-    //}
     nodeHandle.spinOnce();
 }
