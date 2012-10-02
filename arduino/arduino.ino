@@ -6,7 +6,6 @@
 #include <ros/time.h>
 #include <sensor_msgs/LaserScan.h>
 #include <std_msgs/Empty.h>
-#include <std_msgs/String.h>
 #include <Wire.h>
 #include <Servo.h>
 
@@ -45,9 +44,7 @@ int getRange_Ultrasound() {
 }
 
 sensor_msgs::LaserScan ls_msg;
-std_msgs::String string_msg;
 ros::Publisher pub_laserscan( "/base_scan", &ls_msg);
-ros::Publisher pub_debug( "/arpdebug", &string_msg);
 
 void messageCb( const std_msgs::Empty& toggle_msg){
     tone(8, 262, 100);
@@ -63,19 +60,18 @@ void setupUltrasonic()
     Wire.write(byte(0x5d));      
     Wire.endTransmission();      // stop transmitting
 }
-
+float fullscan[50];
 ros::NodeHandle  nodeHandle;
 void setupPubSub()
 {
     ls_msg.header.frame_id = "laser_frame";
-    ls_msg.ranges = (float *) malloc(50*sizeof(float));
+    ls_msg.ranges = &fullscan[0];
     ls_msg.angle_min = 0;
     ls_msg.angle_max = 50;
     ls_msg.angle_increment = 1;
     ls_msg.scan_time = 1;
     nodeHandle.initNode();
     nodeHandle.advertise(pub_laserscan);
-    nodeHandle.advertise(pub_debug);
     nodeHandle.subscribe(subbeep);
 }
 
@@ -140,10 +136,6 @@ void sweepAndScan()
     }
     else if(servo_pos == 0) {
         flag = false;
-    }
-    else if (servo_pos % 5 == 0) {
-        string_msg.data = "Hello";
-        pub_debug.publish(&string_msg);
     }
 }
 
