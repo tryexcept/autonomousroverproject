@@ -125,9 +125,9 @@ void sweepAndScan()
     myservo.write(servo_pos);
     if (servo_pos == 50) 
     {
-        ls_msg.data = fullscan;
-        pub_laserscan.publish(&ls_msg);
         flag = true;
+        //ls_msg.data = &fullscan;
+        pub_laserscan.publish(&ls_msg);
     }
     else if(servo_pos == 0) {
         flag = false;
