@@ -99,11 +99,15 @@ void setup()
     setupMotors();
 
     // tell the world you are ready
-    for (int i=0; i < 10; ++i)
-    {
-        beep();
-        delay(100);
-    }
+    //for (int i=0; i < 10; ++i)
+    //{
+    beep();
+    delay(100);
+    beep();
+    delay(100);
+    beep();
+    delay(100);
+    //}
 }
 
 int servo_pos = 25;
