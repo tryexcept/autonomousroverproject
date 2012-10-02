@@ -6,15 +6,10 @@
 #include <ros/time.h>
 #include <sensor_msgs/LaserScan.h>
 #include <std_msgs/Empty.h>
+#include <std_msgs/String.h>
 #include <Wire.h>
 #include <Servo.h>
 
-ros::NodeHandle  nodeHandle;
-Servo myservo;  
-void beep()
-{
-    tone(8, 262, 100);
-}
 void requestUltrasonicRead() {
   // step 1: instruct sensor to read echoes
   Wire.beginTransmission(112); // transmit to device #112 (0x70)
@@ -26,7 +21,7 @@ void requestUltrasonicRead() {
                                // use 0x52 for ping microseconds
   Wire.endTransmission();      // stop transmitting
   // step 2: wait for readings to happen
-  delay(70);                   // datasheet suggests at least 65 milliseconds
+  delay(65);                   // datasheet suggests at least 65 milliseconds
   // step 3: instruct sensor to return a particular echo reading
   Wire.beginTransmission(112); // transmit to device #112
   Wire.write(byte(0x02));      // sets register pointer to echo #1 register (0x02)
@@ -50,7 +45,9 @@ int getRange_Ultrasound() {
 }
 
 sensor_msgs::LaserScan ls_msg;
+std_msgs::String string_msg;
 ros::Publisher pub_laserscan( "/base_scan", &ls_msg);
+ros::Publisher pub_debug( "/arpdebug", &string_msg);
 
 void messageCb( const std_msgs::Empty& toggle_msg){
     tone(8, 262, 100);
@@ -66,14 +63,22 @@ void setupUltrasonic()
     Wire.write(byte(0x5d));      
     Wire.endTransmission();      // stop transmitting
 }
+
+ros::NodeHandle  nodeHandle;
 void setupPubSub()
 {
     ls_msg.header.frame_id = "laser_frame";
     ls_msg.ranges = (float *) malloc(50*sizeof(float));
+    ls_msg.angle_min = 0;
+    ls_msg.angle_max = 50;
+    ls_msg.angle_increment = 1;
+    ls_msg.scan_time = 1;
     nodeHandle.initNode();
     nodeHandle.advertise(pub_laserscan);
     nodeHandle.subscribe(subbeep);
 }
+
+Servo myservo;  
 void setupServo()
 {
     myservo.attach(9);
@@ -81,6 +86,7 @@ void setupServo()
     // make sure it gets there
     delay(2000);
 }
+
 void setupMotors()
 {
     const int speedA = 3;
@@ -93,6 +99,11 @@ void setupMotors()
     pinMode (speedB, OUTPUT);
 }
 
+void beep()
+{
+    tone(8, 262, 100);
+}
+
 void setup()
 {
     setupServo();
@@ -101,15 +112,11 @@ void setup()
     setupMotors();
 
     // tell the world you are ready
-    //for (int i=0; i < 10; ++i)
-    //{
-    beep();
-    delay(100);
-    beep();
-    delay(100);
-    beep();
-    delay(100);
-    //}
+    for (int i=0; i < 10; ++i)
+    {
+        beep();
+        delay(100);
+    }
 }
 
 int servo_pos = 25;
