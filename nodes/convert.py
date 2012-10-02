@@ -17,7 +17,7 @@ class convert:
     def Cb(self, msg):
         n_ranges = list()
         pv = msg.data[0]
-        for i in range(len(msg.data_length)):
+        for i in range(50):
             if pv>0.0 and msg.data[i]>0.0:
                 n_ranges.append((pv+msg.data[i])/2)
             else:
@@ -29,7 +29,7 @@ class convert:
         laserMsg.ranges = n_ranges
         laserMsg.angle_increment = 0.2; 
         laserMsg.time_increment = 1/50
-        self.scanPub.publish(msg)
+        self.scanPub.publish(laserMsg)
 
 if __name__ == "__main__":
     a = convert()
