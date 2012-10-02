@@ -157,15 +157,29 @@ void setup()
     beep();
 }
 
-void publish()
-{
-    int range = getRange_Ultrasound();
-    ls_msg.header.stamp = nodeHandle.now();
-    //ls_msg.
-    pub_laserscan.publish(&ls_msg);
-}
-
+int ranges[50];
 int servo_pos = 25;
+bool flag = true;
+void sweepAndScan()
+{
+    ranges[servo_pos] = getRange_Ultrasound();
+    if (flag) {
+        --servo_pos;
+    }
+    else {
+        ++servo_pos;
+    }
+    myservo.write(servo_pos);
+    if (servo_pos == 50) 
+    {
+        ls_msg.header.stamp = nodeHandle.now();
+        pub_laserscan.publish(&ls_msg);
+        flag = true;
+    }
+    else if(servo_pos == 0) {
+        flag = false;
+    }
+}
 
 void loop()
 {
@@ -176,7 +190,8 @@ void loop()
     //if ( millis() >= range_time )
     //{
     //    range_time =  millis() + 250;
-    publish();
+    sweepAndScan();
+    //publish();
     //}
     nodeHandle.spinOnce();
 }
