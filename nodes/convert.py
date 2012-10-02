@@ -10,7 +10,7 @@ class convert:
 
     def __init__(self):
         rospy.init_node("arp_scan")
-        rospy.Subscriber("arp_base_scan", Int16MutliArray, self.Cb)
+        rospy.Subscriber("arp_base_scan", Int16MultiArray, self.Cb)
         self.scanPub = rospy.Publisher('scan', LaserScan)
         rospy.spin()
 
