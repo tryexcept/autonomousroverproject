@@ -75,6 +75,7 @@ void setupPubSub()
     ls_msg.scan_time = 1;
     nodeHandle.initNode();
     nodeHandle.advertise(pub_laserscan);
+    nodeHandle.advertise(pub_debug);
     nodeHandle.subscribe(subbeep);
 }
 
@@ -139,6 +140,10 @@ void sweepAndScan()
     }
     else if(servo_pos == 0) {
         flag = false;
+    }
+    else if (servo_pos % 5 == 0) {
+        string_msg.data = "Hello";
+        pub_debug.publish(&string_msg);
     }
 }
 
