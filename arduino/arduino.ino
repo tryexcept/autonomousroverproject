@@ -68,6 +68,8 @@ void setupUltrasonic()
 }
 void setupPubSub()
 {
+    ls_msg.header.frame_id = "laser_frame";
+    ls_msg.ranges = (float *) malloc(50*sizeof(float));
     nodeHandle.initNode();
     nodeHandle.advertise(pub_laserscan);
     nodeHandle.subscribe(subbeep);
