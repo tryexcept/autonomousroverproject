@@ -4,26 +4,24 @@
 
 #include <ros.h>
 #include <ros/time.h>
-#include <sensor_msgs/Range.h>
+#include <sensor_msgs/LaserScan.h>
 #include <std_msgs/Empty.h>
 #include <Wire.h>
-#include "pitches.h"
+#include <Servo.h>
 
-ros::NodeHandle  nh;
-int melody[] = {NOTE_C4, NOTE_G3,NOTE_G3, NOTE_A3, NOTE_G3,0, NOTE_B3, NOTE_C4};
-
-// durations: 4 = quarter note, 8 = eighth note, etc.:
-int noteDurations[] = { 4, 8, 8, 4,4,4,4,4 };
-char frameid[] = "/ultrasound";
-volatile int reading = 0;
-
+ros::NodeHandle  nodeHandle;
+Servo myservo;  
+void beep()
+{
+    tone(8, 262, 100);
+}
 void requestUltrasonicRead() {
   // step 1: instruct sensor to read echoes
   Wire.beginTransmission(112); // transmit to device #112 (0x70)
                                // the address specified in the datasheet is 224 (0xE0)
                                // but i2c adressing uses the high 7 bits so it's 112
   Wire.write(byte(0x00));      // sets register pointer to the command register (0x00)  
-  Wire.write(byte(0x50));      // command sensor to measure in "centimetres" (0x50)
+  Wire.write(byte(0x51));      // command sensor to measure in "centimetres" (0x50)
                                // use 0x51 for inches
                                // use 0x52 for ping microseconds
   Wire.endTransmission();      // stop transmitting
@@ -37,104 +35,148 @@ void requestUltrasonicRead() {
   Wire.requestFrom(112, 2);    // request 2 bytes from slave device #112
 }
 
-float getRange_Ultrasound() {
-  
+int getRange_Ultrasound() {
+  int tmp = 0;
   requestUltrasonicRead();
 
   // step 5: receive reading from sensor
   if(2 <= Wire.available())    // if two bytes were received
   {
-    reading = Wire.read();  // receive high byte (overwrites previous reading)
-    reading = reading << 8;    // shift high byte to be high 8 bits
-    reading |= Wire.read(); // receive low byte as lower 8 bits
+    tmp = Wire.read();  // receive high byte (overwrites previous reading)
+    tmp = tmp << 8;    // shift high byte to be high 8 bits
+    tmp |= Wire.read(); // receive low byte as lower 8 bits
   }
-  return reading;
+  return tmp;
 }
 
-void beep() 
-{
-    tone(8, NOTE_C4, 100);
-}
-
-sensor_msgs::Range range_msg;
-ros::Publisher pub_range( "/ultrasound", &range_msg);
+sensor_msgs::LaserScan ls_msg;
+ros::Publisher pub_laserscan( "/base_scan", &ls_msg);
 
 void messageCb( const std_msgs::Empty& toggle_msg){
-	beep();
+    tone(8, 262, 100);
 }
 
-ros::Subscriber<std_msgs::Empty> sub("/beep", messageCb );
+ros::Subscriber<std_msgs::Empty> subbeep("/beep", messageCb );
 
-void onReceive(int howMany)
+
+//void onReceive(int howMany)
+//{
+//  tone(8, 262, 100);
+//  tone(8, 262, 100);
+//  tone(8, 262, 100);
+//  tone(8, 262, 100);
+//  tone(8, 262, 100);
+// 
+//  //doesn't work
+//  // step 5: receive reading from sensor
+//  if(2 <= Wire.available())    // if two bytes were received
+//  {
+//    reading = Wire.read();  // receive high byte (overwrites previous reading)
+//    reading = reading << 8;    // shift high byte to be high 8 bits
+//    reading |= Wire.read(); // receive low byte as lower 8 bits
+//  }
+//  requestUltrasonicRead();
+//}
+
+int pos = 10;
+bool direction = true;
+void serv()
 {
-  //doesn't work
-  // step 5: receive reading from sensor
-  if(2 <= Wire.available())    // if two bytes were received
-  {
-    reading = Wire.read();  // receive high byte (overwrites previous reading)
-    reading = reading << 8;    // shift high byte to be high 8 bits
-    reading |= Wire.read(); // receive low byte as lower 8 bits
-  }
-  requestUltrasonicRead();
+    myservo.write(pos);              // tell servo to go to position in variable 'pos'
+    pos = direction?pos+10:pos-10;
+    if (pos == 120)
+        direction = true;
+    else if (pos == 0)
+        direction = false;
+
+}
+
+void gmapmode()
+{
+    for (int i = 26; i < 50; ++i)
+    {
+        myservo.write(i);
+        delay(20);
+    }
+    for (int i = 50; i > 0; i--)
+    {
+        myservo.write(i);
+        delay(20);
+    }
+}
+
+void setupUltrasonic()
+{
+    Wire.begin();
+    //Wire.onReceive(onReceive);
+    Wire.beginTransmission(112); // transmit to device #112 (0x70)
+    Wire.write(byte(0x02));      // sets register pointer to range register (0x02)
+    Wire.write(byte(0x5d));      
+    Wire.endTransmission();      // stop transmitting
+}
+void setupPubSub()
+{
+//    range_msg.radiation_type = sensor_msgs::::ULTRASOUND;
+//    range_msg.header.frame_id = "/ultrasound";
+//    range_msg.field_of_view = 0.1;  // fake
+//    range_msg.min_range = 0;
+//    range_msg.max_range = 70;
+
+    nodeHandle.initNode();
+    nodeHandle.advertise(pub_laserscan);
+    nodeHandle.subscribe(subbeep);
+}
+void setupServo()
+{
+    myservo.attach(9);
+    myservo.write(25);
+    delay(2000);
+}
+void setupMotors()
+{
+    const int speedA = 3;
+    const int dirA = 12;
+    const int dirB = 13;  
+    const int speedB = 11; 
+    pinMode (dirA, OUTPUT);
+    pinMode (dirB, OUTPUT);
+    pinMode (speedA, OUTPUT);
+    pinMode (speedB, OUTPUT);
 }
 
 void setup()
 {
-  Wire.begin();
-  
-  Wire.onReceive(onReceive);
-  Wire.beginTransmission(112); // transmit to device #112 (0x70)
-  Wire.write(byte(0x02));      // sets register pointer to range register (0x02)
-  Wire.write(byte(0x5d));      
-  Wire.endTransmission();      // stop transmitting
-
-  
-  nh.initNode();
-  nh.advertise(pub_range);
-  nh.subscribe(sub);
-  
-  range_msg.radiation_type = sensor_msgs::Range::ULTRASOUND;
-  range_msg.header.frame_id =  frameid;
-  range_msg.field_of_view = 0.1;  // fake
-  range_msg.min_range = 0;
-  range_msg.max_range = 70;
-  beep();
-  delay(100);
-  beep();
-  requestUltrasonicRead();
+    setupServo();
+    setupUltrasonic();
+    setupPubSub();
+    setupMotors();
+    beep();
+    delay(100);
+    beep();
+    delay(70);
+    beep();
 }
 
-//void music() 
-//{
-//  gc iterate over the notes of the melody:
-//  for (int thisNote = 0; thisNote < 8; thisNote++) {
-//
-//    gc to calculate the note duration, take one second 
-//    gc divided by the note type.
-//    gce.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-//    int noteDuration = 1000/noteDurations[thisNote];
-//    tone(8, melody[thisNote],noteDuration);
-//
-//    gc to distinguish the notes, set a minimum time between them.
-//    gc the note's duration + 30% seems to work well:
-//    int pauseBetweenNotes = noteDuration * 1.30;
-//    delay(pauseBetweenNotes);
-//    gc stop the tone playing:
-//    noTone(8);
-//  }
-//}
+void publish()
+{
+    int range = getRange_Ultrasound();
+    ls_msg.header.stamp = nodeHandle.now();
+    //ls_msg.
+    pub_laserscan.publish(&ls_msg);
+}
 
-long range_time;
+int servo_pos = 25;
+
 void loop()
 {
-  //publish the adc value every 250 milliseconds
-  //since it takes that long for the sensor to stablize
-  if ( millis() >= range_time ){
-    range_msg.range = getRange_Ultrasound();
-    range_msg.header.stamp = nh.now();
-    pub_range.publish(&range_msg);
-    range_time =  millis() + 250;
-  }
-  nh.spinOnce();
+    long range_time;
+    // publish the adc value at most every 250 milliseconds
+    // since it takes that long for the sensor to stablize
+    // FIXME: public spin lock - i rather have a timer interrupt or something
+    //if ( millis() >= range_time )
+    //{
+    //    range_time =  millis() + 250;
+    publish();
+    //}
+    nodeHandle.spinOnce();
 }
-
