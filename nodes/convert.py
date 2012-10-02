@@ -29,6 +29,7 @@ class convert:
         laserMsg.ranges = n_ranges
         laserMsg.angle_increment = 0.2; 
         laserMsg.time_increment = 1/50
+        laserMsg.header.frame_id = 'ultra'
         self.scanPub.publish(laserMsg)
 
 if __name__ == "__main__":
