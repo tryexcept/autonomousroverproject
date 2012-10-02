@@ -114,7 +114,7 @@ bool flag = true;
 int fullscan[50];
 void sweepAndScan()
 {
-    ls_msg.data[servo_pos] = getRange_Ultrasound();
+    fullscan[servo_pos] = getRange_Ultrasound();
     if (flag) {
         --servo_pos;
     }
