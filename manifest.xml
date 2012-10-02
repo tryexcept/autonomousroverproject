@@ -1,0 +1,17 @@
+<package>
+  <description brief="arp">
+
+     arp - autonomous rover project
+
+  </description>
+  <author>ros</author>
+  <license>GPL3</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://wiki.london.hackspace.org.uk/view/Project:ARP</url>
+  <depend package="sensor_msgs"/>
+  <depend package="rospy"/>
+  <depend package="roscpp"/>
+
+</package>
+
+
