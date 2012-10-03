@@ -70,10 +70,11 @@ void setupPubSub()
 }
 
 Servo myservo;  
+int servo_pos = 0;
 void setupServo()
 {
     myservo.attach(9);
-    myservo.write(25);
+    myservo.write(servo_pos);
     // make sure it gets there
     delay(2000);
 }
@@ -110,27 +111,18 @@ void setup()
     }
 }
 
-int servo_pos = 25;
-bool flag = true;
+bool flag = false;
 int fullscan[50];
+
 void sweepAndScan()
 {
     fullscan[servo_pos] = getRange_Ultrasound();
-    if (flag) {
-        --servo_pos;
-    }
-    else {
-        ++servo_pos;
-    }
+    servo_pos = flag ? servo_pos - 1: servo_pos + 1;
     myservo.write(servo_pos);
-    if (servo_pos == 49) 
-    {
-        flag = true;
+    if(servo_pos == 0 || servo_pos == 49) {
+        flag = !flag;
         ls_msg.data = fullscan;
         pub_laserscan.publish(&ls_msg);
-    }
-    else if(servo_pos == 0) {
-        flag = false;
     }
 }
 
