@@ -29,7 +29,7 @@ class convert:
         laserMsg.ranges = n_ranges
         laserMsg.angle_increment = 0.2; 
         laserMsg.time_increment = 1/50
-        laserMsg.header.frame_id = 'ultra'
+        laserMsg.header.frame_id = '/ultra'
         laserMsg.header.stamp = rospy.Time.now()
         self.scanPub.publish(laserMsg)
 
