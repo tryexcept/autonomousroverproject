@@ -116,9 +116,13 @@ int fullscan[50];
 
 void sweepAndScan()
 {
-    fullscan[servo_pos] = getRange_Ultrasound();
-    servo_pos = flag ? servo_pos - 1: servo_pos + 1;
     myservo.write(servo_pos);
+    fullscan[servo_pos] = getRange_Ultrasound();
+    if (fullscan[servo_pos] < 15) 
+    {
+        beep();
+    }
+    servo_pos = flag ? servo_pos - 1: servo_pos + 1;
     if(servo_pos == 0 || servo_pos == 49) {
         flag = !flag;
         ls_msg.data = fullscan;
